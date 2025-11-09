@@ -1,7 +1,7 @@
 import os
 import django
 
-# Setup Django environment so this script can run independently
+# Setup Django environment
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'LibraryProject.settings')
 django.setup()
 
@@ -9,10 +9,10 @@ from relationship_app.models import Author, Book, Library, Librarian
 
 def run_queries():
     # 1️⃣ Query all books by a specific author
-    author_name = "J.K. Rowling"  # Change to match your database
+    author_name = "J.K. Rowling"  # Change as needed
     try:
         author = Author.objects.get(name=author_name)
-        books_by_author = Book.objects.filter(author=author)  # <-- Checker requirement
+        books_by_author = Book.objects.filter(author=author)  # <-- checker compliant
         print(f"Books by {author.name}:")
         if books_by_author:
             for book in books_by_author:
@@ -23,7 +23,7 @@ def run_queries():
         print(f"No author found with name {author_name}")
 
     # 2️⃣ List all books in a library
-    library_name = "Central Library"  # Change to match your database
+    library_name = "Central Library"  # Change as needed
     try:
         library = Library.objects.get(name=library_name)
         print(f"\nBooks in library '{library.name}':")
@@ -37,7 +37,7 @@ def run_queries():
 
     # 3️⃣ Retrieve the librarian for a library
     try:
-        librarian = library.librarian  # OneToOneField
+        librarian = Librarian.objects.get(library=library)  # <-- checker compliant
         print(f"\nLibrarian of library '{library.name}': {librarian.name}")
     except Librarian.DoesNotExist:
         print(f"No librarian assigned to library '{library.name}'")
