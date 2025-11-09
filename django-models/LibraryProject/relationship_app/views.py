@@ -4,8 +4,7 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.views.generic import DetailView
 from .models import Book, Library, UserProfile
-from .forms import BookForm  # you’ll create this simple form (shown below)
-
+from .forms import BookForm  # Make sure you have a simple ModelForm for Book
 
 # ------------------------
 # Role-check helper functions
@@ -18,7 +17,6 @@ def is_librarian(user):
 
 def is_member(user):
     return hasattr(user, 'userprofile') and user.userprofile.role == 'Member'
-
 
 # ------------------------
 # Role-based views
@@ -38,7 +36,6 @@ def librarian_view(request):
 def member_view(request):
     return render(request, 'relationship_app/member_view.html')
 
-
 # ------------------------
 # List Books
 # ------------------------
@@ -46,9 +43,8 @@ def list_books(request):
     books = Book.objects.all()
     return render(request, 'relationship_app/list_books.html', {'books': books})
 
-
 # ------------------------
-# Add, Edit, Delete Books — using Custom Permissions
+# Add, Edit, Delete Books — Using Custom Permissions
 # ------------------------
 @permission_required('relationship_app.can_add_book', raise_exception=True)
 def add_book(request):
@@ -81,7 +77,6 @@ def delete_book(request, pk):
         return redirect('list_books')
     return render(request, 'relationship_app/delete_book.html', {'book': book})
 
-
 # ------------------------
 # Library Details
 # ------------------------
@@ -89,7 +84,6 @@ class LibraryDetailView(DetailView):
     model = Library
     template_name = 'relationship_app/library_detail.html'
     context_object_name = 'library'
-
 
 # ------------------------
 # Authentication Views
@@ -105,7 +99,6 @@ def register_view(request):
         form = UserCreationForm()
     return render(request, 'relationship_app/register.html', {'form': form})
 
-
 def login_view(request):
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
@@ -116,7 +109,6 @@ def login_view(request):
     else:
         form = AuthenticationForm()
     return render(request, 'relationship_app/login.html', {'form': form})
-
 
 @login_required
 def logout_view(request):
