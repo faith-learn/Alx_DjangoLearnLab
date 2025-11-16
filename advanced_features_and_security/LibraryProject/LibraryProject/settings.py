@@ -13,61 +13,11 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(_file_).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent
 
-# settings.py
-
-# --- Browser-Side Protections ---
-
-# 1. X-Frame-Options (Clickjacking Prevention)
-# 'DENY' prevents your site from being embedded in a frame, iframe, embed, or object.
-# Use 'SAMEORIGIN' if you need framing for content from the same domain.
-X_FRAME_OPTIONS = 'DENY' 
-
-# 2. X-Content-Type-Options (MIME-sniffing Prevention)
-# Stops browsers from trying to guess the content type, preventing certain XSS attacks.
-SECURE_CONTENT_TYPE_NOSNIFF = True
-
-# 3. X-XSS-Protection (Legacy XSS Filter)
-# Activates the browser's built-in Cross-Site Scripting filter.
-# Note: CSP is the modern and more robust alternative.
-SECURE_BROWSER_XSS_FILTER = True
-
-
-# --- Secure Cookie Configuration (Requires HTTPS) ---
-
-# 4. CSRF Cookie Security
-# Ensures the CSRF token cookie is only transmitted over HTTPS connections.
-CSRF_COOKIE_SECURE = True
-
-# 5. Session Cookie Security
-# Ensures the session ID cookie is only transmitted over HTTPS connections.
-SESSION_COOKIE_SECURE = True
-
-# LibraryProject/settings.py
-
-# --- Content Security Policy (CSP) Configuration ---
-# Set the default allowed source to only the current domain ('self')
-CSP_DEFAULT_SRC = ("'self'",)
-
-# Scripts are only allowed from the current domain
-CSP_SCRIPT_SRC = ("'self'",) 
-
-# Styles are allowed from the current domain and one external source (e.g., Google Fonts)
-CSP_STYLE_SRC = ("'self'", 'fonts.googleapis.com') 
-
-# Images allowed from current domain
-CSP_IMG_SRC = ("'self'",)
-
-SECURE_SSL_REDIRECT = True
-SECURE_HSTS_SECONDS = 31536000
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_HSTS_PRELOAD = True
-SESSION_COOKIE_HTTPONLY = True
-CSRF_COOKIE_HTTPONLY = True
-
+# ========================
 # Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
+# ========================
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-1*gu^zjk&2kvx#el%&b0i$zp=9w)+&*t-_g^upmsoaq01r#c7%'
@@ -77,13 +27,10 @@ DEBUG = False
 
 ALLOWED_HOSTS = ['.yourdomain.com', '127.0.0.1', 'localhost']
 
-
+# ========================
 # Application definition
-#customuser models
-AUTH_USER_MODEL='bookshelf.CustomUser'
+# ========================
 
-
-# Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -97,16 +44,17 @@ INSTALLED_APPS = [
     'bookshelf',
 ]
 
+AUTH_USER_MODEL = 'bookshelf.CustomUser'  # Custom user model
+
 MIDDLEWARE = [
-     'django.csp.middleware.CspMiddleware'
-    'django.middleware.security.SecurityMiddleware',
+    'django.middleware.security.SecurityMiddleware',  # Security first
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',  # Clickjacking protection
+    'django_csp.middleware.CSPMiddleware',  # CSP middleware (optional)
 ]
 
 ROOT_URLCONF = 'LibraryProject.urls'
@@ -128,7 +76,10 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'LibraryProject.wsgi.application'
 
+# ========================
 # Database
+# ========================
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -136,7 +87,10 @@ DATABASES = {
     }
 }
 
+# ========================
 # Password validation
+# ========================
+
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -144,23 +98,58 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
+# ========================
 # Internationalization
+# ========================
+
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-# Static files
-STATIC_URL = 'static/'
+# ========================
+# Static & Media files
+# ========================
 
-# Media files (for profile photos)
+STATIC_URL = 'static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# ========================
 # Default primary key field type
+# ========================
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Custom user model
-AUTH_USER_MODEL  = 'bookshelf.CustomUser'
+# ========================
+# HTTPS & Security Settings
+# ========================
 
+# --- HTTPS Enforcement ---
+SECURE_SSL_REDIRECT = True  # Redirect all HTTP to HTTPS
+SECURE_HSTS_SECONDS = 31536000  # 1 year
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+
+# --- Secure Cookies ---
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = True
+
+# --- Browser-Side Protections ---
+X_FRAME_OPTIONS = 'DENY'  # Clickjacking protection
+SECURE_CONTENT_TYPE_NOSNIFF = True  # Prevent MIME type sniffing
+SECURE_BROWSER_XSS_FILTER = True  # Enable XSS filter
+
+# --- Content Security Policy (CSP) ---
+CSP_DEFAULT_SRC = ("'self'",)
+CSP_SCRIPT_SRC = ("'self'",)
+CSP_STYLE_SRC = ("'self'", 'fonts.googleapis.com')
+CSP_IMG_SRC = ("'self'",)
+
+# --- Secure Proxy SSL Header ---
+# Required when Django is behind a proxy/load balancer (e.g., Nginx)
+# Tells Django to trust X-Forwarded-Proto header for HTTPS detection
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
