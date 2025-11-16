@@ -1,49 +1,101 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.conf import settings # Import settings
+from django.utils.translation import gettext_lazy as _
 
-# ------------------------
-# CustomUser (for checker only)
-# ------------------------
 class CustomUserManager(BaseUserManager):
-    def create_user(self, username, email, password=None, **extra_fields):
+   
+    def create_user(self, email, password, **extra_fields):
+        """
+        Create and save a User with the given email and password.
+        """
         if not email:
-            raise ValueError("Users must have an email address")
+            raise ValueError(_('The Email must be set'))
         email = self.normalize_email(email)
-        user = self.model(username=username, email=email, **extra_fields)
+        
+        # Note: We can remove 'username' requirement from AbstractUser here,
+        # but for simplicity, we'll keep AbstractUser's existing fields.
+        user = self.model(email=email, **extra_fields)
         user.set_password(password)
-        user.save(using=self._db)
+        user.save()
         return user
 
-    def create_superuser(self, username, email, password=None, **extra_fields):
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
-        return self.create_user(username, email, password, **extra_fields)
+    def create_superuser(self, email, password, **extra_fields):
+        
+       
+
+
+        if 'date_of_birth' not in extra_fields:
+            
+            
+         if extra_fields.get('is_staff') is not True:
+            raise ValueError(('Superuser must have is_staff=True.'))
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError(('Superuser must have is_superuser=True.'))
+        
+        
+        if 'username' not in extra_fields:
+             extra_fields['username'] = email
+
+        return self.create_user(email, password, **extra_fields)
 
 
 class CustomUser(AbstractUser):
+    
     date_of_birth = models.DateField(null=True, blank=True)
     profile_photo = models.ImageField(upload_to='profile_photos/', null=True, blank=True)
+    
+    
+    objects = CustomUserManager() 
 
-    objects = CustomUserManager()
-
-    def __str__(self):
-        return self.username
-
-
-# ------------------------
-# Actual Book-related models
-# ------------------------
-class Author(models.Model):
-    name = models.CharField(max_length=200)
-
-    def __str__(self):
-        return self.name
-
-
+    class Meta:
+        verbose_name = _('user')
+        verbose_name_plural = _('users')
+    
+    def _str_(self):
+        return self.email or self.username
+    
+# Create your models here.
 class Book(models.Model):
-    title = models.CharField(max_length=255)
-    author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='books')
-    publication_year = models.PositiveIntegerField(null=True, blank=True)
+    title=models.CharField (max_length =200)
+    author=models.CharField (max_length =100)
+    publication_year= models.IntegerField()
 
-    def __str__(self):
+    def _str_(self):
+        return f"{self.title} by {self.author}" 
+    
+    
+
+
+   
+
+
+
+# Assuming CustomUser is still defined here from the previous task
+# ... (CustomUser definition) ...
+
+class Article(models.Model):
+    title = models.CharField(max_length=255)
+    content = models.TextField()
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE, 
+        related_name='articles'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        # Define the app label for easier reference (optional if in the app's models.py)
+        app_label = 'core'
+        
+        # Custom Permissions Definition
+        permissions = [
+            ('can_view_article', _('Can view article content')),
+            ('can_create_article', _('Can create new article')),
+            ('can_edit_article', _('Can edit existing article')),
+            ('can_delete_article', _('Can delete article')),
+        ]
+        
+    def _str_(self):
         return self.title
