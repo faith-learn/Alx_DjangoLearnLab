@@ -15,18 +15,28 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
-from django.contrib import admin
-from django.urls import path, include
-from rest_framework import routers
-from api.views import AuthorViewSet, BookViewSet
-
-# DRF router to automatically generate /api/authors/ and /api/books/ endpoints
-router = routers.DefaultRouter()
-router.register(r'authors', AuthorViewSet)
-router.register(r'books', BookViewSet)
+from django.urls import path
+from .views import (
+    BookListView,
+    BookDetailView,
+    BookCreateView,
+    BookUpdateView,
+    BookDeleteView
+)
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/', include(router.urls)),          # Main API endpoints
-    path('api-auth/', include('rest_framework.urls')),  # DRF login/logout
+    # List all books
+    path('books/', BookListView.as_view(), name='book-list'),
+    
+    # Retrieve a single book by ID
+    path('books/<int:pk>/', BookDetailView.as_view(), name='book-detail'),
+    
+    # Create a new book
+    path('books/create/', BookCreateView.as_view(), name='book-create'),
+    
+    # Update an existing book
+    path('books/<int:pk>/update/', BookUpdateView.as_view(), name='book-update'),
+    
+    # Delete a book
+    path('books/<int:pk>/delete/', BookDeleteView.as_view(), name='book-delete'),
 ]
