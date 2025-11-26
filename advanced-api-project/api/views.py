@@ -1,16 +1,17 @@
-from rest_framework import generics, permissions
+from rest_framework import generics
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.exceptions import ValidationError
 from .models import Book
 from .serializers import BookSerializer
 
 # -------------------------------
 # List all books
-# Anyone can read
+# Anyone can read; authenticated users can write (if needed)
 # Optional filtering by author via query parameter: ?author=1
 # -------------------------------
 class BookListView(generics.ListAPIView):
     serializer_class = BookSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
         queryset = Book.objects.all()
@@ -26,7 +27,7 @@ class BookListView(generics.ListAPIView):
 class BookDetailView(generics.RetrieveAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
 # -------------------------------
 # Create a new book
@@ -36,10 +37,10 @@ class BookDetailView(generics.RetrieveAPIView):
 class BookCreateView(generics.CreateAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
-        if serializer.validated_data['publication_year'] > 2025:  # Replace with current year if needed
+        if serializer.validated_data['publication_year'] > 2025:  # Replace with current year
             raise ValidationError("Publication year cannot be in the future.")
         serializer.save()
 
@@ -51,7 +52,7 @@ class BookCreateView(generics.CreateAPIView):
 class BookUpdateView(generics.UpdateAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def perform_update(self, serializer):
         if serializer.validated_data['publication_year'] > 2025:
@@ -65,4 +66,4 @@ class BookUpdateView(generics.UpdateAPIView):
 class BookDeleteView(generics.DestroyAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
